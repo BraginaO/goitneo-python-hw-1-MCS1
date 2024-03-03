@@ -1,0 +1,96 @@
+from datetime import datetime
+
+def get_birthdays_per_week(users):
+    today = datetime.today()
+    today = today.date()
+    days_of_week = {"Monday": [], "Tuesday":[], "Wednesday": [], "Thursday": [],"Friday": []}
+
+    for user in users:
+        name = user["name"]
+        birthday = user["birthday"].date()
+        birthday_this_year = birthday.replace(year=today.year)
+        if birthday_this_year < today:
+            birthday_this_year = birthday_this_year.replace(year=birthday_this_year.year + 1)
+        delta_days = (birthday_this_year - today).days
+        if delta_days < 7:
+            day_of_week = user["birthday"].strftime('%A')
+            if day_of_week in days_of_week:
+                days_of_week[day_of_week].append(name)
+            else:
+                days_of_week["Monday"] = name
+    
+    for key in days_of_week:
+        if days_of_week[key]:
+            print(f"On {key} congratulate next people: ", end= "")
+            for i in days_of_week[key]: 
+                print(f"{i}, ", end= "")
+            print(" ")
+
+
+def parse_input(user_input):
+    while not user_input:
+        print("Empty command. Try again.")
+        user_input = input("Enter a command: ")
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
+
+def add_contact(args, contacts):
+    name, phone = args
+    if name in contacts:
+        return f"Contact already exists! If you want to update phone - use [change {name} NEW_PHONE] command"
+    else:
+        contacts[name] = phone
+        return "Contact added."
+
+def change_contact(args, contacts):
+    name, phone = args
+    if name in contacts:
+        contacts[name] = phone
+        return f"Contact changed to {name}: {contacts[name]}"
+    else:
+        return "Contact not found"  
+
+def show_phone(args, contacts):
+    name, *phone = args
+    if name in contacts:
+        return contacts[name]
+    else:
+        return "Contact not found."   
+
+def all(contacts):
+    for name, phone in contacts.items():
+        print ("Name: {:<7} | Phone: {:<7} | ".format(name, phone))
+
+def help():
+    commands = ["hello/hi", "add", "change", "find", "all", "close/exit"]
+    description = ["N/A", "Name and Phone", "Name and Phone", "Name", "N/A", "N/A"]
+    print ('| {:1} | {:^14} | {:^14} | {:^5} | {:^3} | {:^3} |'.format(*commands))
+    print ('| {:^8} | {:^11} | {:^11} | {:^5} | {:^3} | {:^10} |'.format(*description))
+
+def main():
+    contacts = {}
+    print("Welcome to the assistant bot! Use HELP to see all commands")
+    while True:
+        user_input = input("Enter a command: ")
+        command, *args = parse_input(user_input)
+
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
+        elif command in ["hello", "hi"]:
+            print("How can I help you?")
+        elif command == "add":
+            print(add_contact(args, contacts))
+        elif command == "change":
+            print(change_contact(args, contacts))
+        elif command == "find":
+            print(show_phone(args, contacts))
+        elif command == "all":
+            all(contacts)
+        elif command == "help":
+            help()                  
+        else:
+            print("Invalid command.")
+
+main()
